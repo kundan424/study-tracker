@@ -9,7 +9,7 @@ router.get('/today', async (req, res) => {
     let goal = await Goal.findOne({ date: todayISO });
     
     if (!goal) {
-      goal = { date: todayISO, targetMinutes: 240 }; // Default goal
+      goal = { date: todayISO, targetMinutes: 240, targetLectures: 2 }; // Default goal
     }
     
     res.status(200).json(goal);
@@ -21,16 +21,20 @@ router.get('/today', async (req, res) => {
 // PUT / - upsert goal
 router.put('/', async (req, res) => {
   try {
-    const { date, targetMinutes } = req.body;
+    const { date, targetMinutes, targetLectures } = req.body;
     
-    if (!date || targetMinutes == null) {
-      return res.status(400).json({ error: 'date and targetMinutes are required' });
+    if (!date) {
+      return res.status(400).json({ error: 'Date is required' });
     }
     
+    const updateData = {};
+    if (targetMinutes !== undefined) updateData.targetMinutes = targetMinutes;
+    if (targetLectures !== undefined) updateData.targetLectures = targetLectures;
+
     const goal = await Goal.findOneAndUpdate(
       { date },
-      { targetMinutes },
-      { new: true, upsert: true, runValidators: true }
+      updateData,
+      { new: true, upsert: true, setDefaultsOnInsert: true }
     );
     
     res.status(200).json(goal);

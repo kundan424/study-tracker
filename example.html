@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logbook — Study Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void: #12161D;
+    --panel: #1B2230;
+    --panel-raised: #212A3A;
+    --line: #2A3344;
+    --brass: #C89B4B;
+    --brass-dim: #8A6B34;
+    --brass-glow: rgba(200,155,75,0.18);
+    --teal: #3FA796;
+    --teal-glow: rgba(63,167,150,0.20);
+    --paper: #E8E2D0;
+    --muted: #8993A6;
+    --ember: #D2603A;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-body: 'IBM Plex Sans', sans-serif;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background-color: var(--void);
+    background-image:
+      repeating-linear-gradient(0deg, var(--line) 0px, var(--line) 1px, transparent 1px, transparent 32px),
+      repeating-linear-gradient(90deg, var(--line) 0px, var(--line) 1px, transparent 1px, transparent 32px);
+    background-attachment: fixed;
+    opacity: 1;
+    color: var(--paper);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+  body::before{ content:''; }
+  a{ color: var(--brass); }
+  .wrap{ max-width: 880px; margin: 0 auto; padding: 28px 20px 80px; }
+
+  /* Header */
+  header.hero{
+    display:flex; justify-content:space-between; align-items:flex-end; gap:16px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 22px; margin-bottom: 22px;
+  }
+  .hero-title{
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(32px, 6vw, 48px);
+    letter-spacing: -0.02em;
+    margin: 0;
+    color: var(--paper);
+  }
+  .hero-sub{
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .streak-badge{
+    display:flex; align-items:center; gap:10px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 10px 16px;
+    position: relative;
+  }
+  .streak-badge::before, .streak-badge::after{
+    content:''; position:absolute; width:8px; height:8px; border: 1.5px solid var(--brass);
+  }
+  .streak-badge::before{ top:-1px; left:-1px; border-right:none; border-bottom:none; }
+  .streak-badge::after{ bottom:-1px; right:-1px; border-left:none; border-top:none; }
+  .streak-num{ font-family: var(--font-display); font-size: 26px; font-weight:700; color: var(--brass); }
+  .streak-label{ font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+
+  /* Tabs */
+  nav.tabs{ display:flex; gap: 2px; flex-wrap: wrap; margin-bottom: 26px; }
+  nav.tabs button{
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: var(--panel);
+    color: var(--muted);
+    border: 1px solid var(--line);
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  nav.tabs button.active{ color: var(--brass); border-color: var(--brass-dim); }
+  nav.tabs button:hover{ color: var(--paper); }
+  @media (prefers-reduced-motion: reduce){ nav.tabs button{ transition:none; } }
+
+  /* Panel */
+  .panel{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 22px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .panel::before, .panel::after{
+    content:''; position:absolute; width:10px; height:10px; border: 1.5px solid var(--brass-dim);
+  }
+  .panel::before{ top:-1px; left:-1px; border-right:none; border-bottom:none; }
+  .panel::after{ bottom:-1px; right:-1px; border-left:none; border-top:none; }
+  .panel h2{
+    font-family: var(--font-display); font-size: 18px; font-weight:600; margin: 0 0 4px;
+    color: var(--paper);
+  }
+  .panel .panel-sub{ font-size: 13px; color: var(--muted); margin: 0 0 18px; }
+
+  /* Progress bars */
+  .bar-row{ margin-bottom: 14px; }
+  .bar-row:last-child{ margin-bottom: 0; }
+  .bar-label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size: 13px; margin-bottom: 6px;
+  }
+  .bar-label .name{ font-weight: 600; }
+  .bar-label .count{ font-family: var(--font-mono); color: var(--muted); font-size: 12px; }
+  .bar-track{ height: 8px; background: var(--void); border: 1px solid var(--line); overflow:hidden; }
+  .bar-fill{ height: 100%; background: var(--brass); }
+  .bar-fill.teal{ background: var(--teal); }
+
+  /* Day navigator */
+  .day-nav{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .day-nav .date-display{ font-family: var(--font-display); font-size: 17px; font-weight:600; }
+  .day-nav .date-display .tag{
+    font-family: var(--font-mono); font-size: 11px; color: var(--brass);
+    border: 1px solid var(--brass-dim); padding: 2px 6px; margin-left: 8px; vertical-align: 2px;
+  }
+  .nav-btns{ display:flex; gap:6px; }
+  .icon-btn{
+    background: var(--panel-raised); border: 1px solid var(--line); color: var(--paper);
+    width: 34px; height: 34px; cursor:pointer; font-family: var(--font-mono); font-size: 15px;
+  }
+  .icon-btn:hover{ border-color: var(--brass-dim); }
+  .icon-btn:disabled{ opacity:0.3; cursor:not-allowed; }
+  .text-btn{
+    background: transparent; border: 1px solid var(--line); color: var(--muted);
+    padding: 8px 12px; cursor:pointer; font-family: var(--font-mono); font-size: 12px;
+  }
+  .text-btn:hover{ color: var(--brass); border-color: var(--brass-dim); }
+
+  /* Chip strip */
+  .chip-strip{ display:flex; gap:6px; overflow-x:auto; padding-bottom: 6px; margin-bottom: 18px; }
+  .chip{
+    flex: 0 0 auto; width: 54px; text-align:center; padding: 8px 4px;
+    background: var(--panel-raised); border: 1px solid var(--line); cursor:pointer;
+  }
+  .chip.active{ border-color: var(--brass); }
+  .chip .wd{ font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+  .chip .dnum{ font-family: var(--font-display); font-size: 15px; font-weight:600; margin: 2px 0; }
+  .chip .dots{ display:flex; justify-content:center; gap:3px; }
+  .chip .dot{ width:5px; height:5px; border-radius:50%; background: var(--line); }
+  .chip .dot.on{ background: var(--brass); }
+  .chip .dot.on.teal{ background: var(--teal); }
+
+  /* Lecture rows */
+  .lec-row{
+    display:flex; align-items:center; gap:14px; width:100%;
+    background: var(--panel-raised); border: 1px solid var(--line);
+    padding: 14px 16px; margin-bottom: 8px; cursor:pointer; text-align:left;
+    font-family: var(--font-body); color: var(--paper);
+  }
+  .lec-row:last-child{ margin-bottom: 0; }
+  .lec-row .box{
+    width: 20px; height:20px; border: 1.5px solid var(--muted); flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .lec-row.done .box{ border-color: var(--brass); background: var(--brass); }
+  .lec-row.done .box svg{ display:block; }
+  .lec-row .box svg{ display:none; width:12px; height:12px; }
+  .lec-row .info{ flex:1; }
+  .lec-row .info .subj{ font-weight:600; font-size:14px; }
+  .lec-row .info .lecno{ font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-top:2px; }
+  .lec-row.done .info .subj{ color: var(--muted); text-decoration: line-through; }
+  .lec-row.complete{ opacity: 0.55; cursor: default; }
+  .subject-dot{ width:8px; height:8px; border-radius:50%; background: var(--brass); flex-shrink:0; }
+  .subject-dot.teal{ background: var(--teal); }
+  .empty-note{ color: var(--muted); font-size: 13px; font-family: var(--font-mono); padding: 6px 0; }
+
+  /* Forms */
+  label.field{ display:block; margin-bottom: 14px; }
+  label.field .lbl{ display:block; font-size: 12px; font-family: var(--font-mono); color: var(--muted); margin-bottom: 6px; }
+  input[type=text], input[type=date], input[type=number], textarea{
+    width: 100%; background: var(--void); border: 1px solid var(--line); color: var(--paper);
+    padding: 10px 12px; font-family: var(--font-body); font-size: 14px;
+  }
+  input:focus, textarea:focus, button:focus-visible{ outline: 2px solid var(--brass); outline-offset: 1px; }
+  textarea{ min-height: 70px; resize: vertical; }
+  .row-2{ display:grid; grid-template-columns: 1fr 120px; gap: 12px; }
+  @media (max-width: 500px){ .row-2{ grid-template-columns: 1fr; } }
+  .btn-primary{
+    background: var(--brass); color: var(--void); border:none; font-weight:600;
+    padding: 11px 20px; font-family: var(--font-body); font-size: 14px; cursor:pointer;
+  }
+  .btn-primary:hover{ background: #d9ac5e; }
+
+  /* Self study entries */
+  .entry{
+    border: 1px solid var(--line); padding: 14px 16px; margin-bottom: 10px;
+    background: var(--panel-raised); position:relative;
+  }
+  .entry:last-child{ margin-bottom:0; }
+  .entry .erow{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+  .entry .edate{ font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .entry .etopic{ font-weight:600; font-size: 14px; margin: 4px 0; }
+  .entry .enotes{ font-size: 13px; color: var(--muted); white-space: pre-wrap; }
+  .entry .emin{ font-family: var(--font-mono); font-size: 11px; color: var(--teal); }
+  .del-btn{
+    background:none; border:none; color: var(--muted); cursor:pointer; font-size: 16px; line-height:1;
+    padding: 2px 4px;
+  }
+  .del-btn:hover{ color: var(--ember); }
+
+  /* Questions */
+  .q-input-row{ display:flex; align-items:center; gap:14px; margin-bottom: 18px; flex-wrap: wrap; }
+  .q-input-row input[type=number]{ width: 100px; font-family: var(--font-mono); font-size: 18px; text-align:center; }
+  .q-vs{ font-family: var(--font-mono); color: var(--muted); font-size: 13px; }
+  .q-bar-track{ height: 14px; background: var(--void); border: 1px solid var(--line); overflow:hidden; margin-bottom: 22px; }
+  .q-bar-fill{ height:100%; transition: width .2s ease; }
+  @media (prefers-reduced-motion: reduce){ .q-bar-fill{ transition:none; } }
+  .stat-grid{ display:grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 20px; }
+  .stat-box{ border: 1px solid var(--line); padding: 12px 14px; background: var(--panel-raised); }
+  .stat-box .stat-label{ font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .stat-box .stat-val{ font-family: var(--font-display); font-size: 22px; font-weight:700; margin-top:4px; }
+  table.hist{ width:100%; border-collapse: collapse; font-size: 13px; }
+  table.hist th{ text-align:left; font-family: var(--font-mono); font-size: 11px; color: var(--muted); font-weight:400; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  table.hist td{ padding: 8px; border-bottom: 1px solid var(--line); }
+  table.hist tr:last-child td{ border-bottom:none; }
+
+  /* Special war */
+  .boost-header{
+    display:flex; justify-content:space-between; align-items:center; margin-bottom: 18px; flex-wrap:wrap; gap:10px;
+  }
+  .boost-meter{
+    background: linear-gradient(135deg, var(--teal-glow), var(--brass-glow));
+    border: 1px solid var(--teal); padding: 16px 20px; margin-bottom: 22px;
+  }
+  .boost-meter .bm-top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+  .boost-meter .bm-title{ font-family: var(--font-display); font-weight:700; font-size: 16px; display:flex; align-items:center; gap:8px; }
+  .boost-meter .bm-count{ font-family: var(--font-mono); font-size: 13px; color: var(--paper); }
+  .sw-card{ border: 1px solid var(--line); background: var(--panel-raised); padding: 16px; margin-bottom: 14px; }
+  .sw-card:last-child{ margin-bottom:0; }
+  .sw-card .sw-top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+  .sw-card .sw-name{ font-weight:600; font-size:14px; }
+  .sw-card .sw-count{ font-family: var(--font-mono); font-size:12px; color: var(--muted); }
+  .sw-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(38px,1fr)); gap: 6px; margin-top: 10px; }
+  .sw-num{
+    aspect-ratio: 1; display:flex; align-items:center; justify-content:center;
+    background: var(--void); border: 1px solid var(--line); color: var(--muted);
+    font-family: var(--font-mono); font-size: 12px; cursor:pointer;
+  }
+  .sw-num.on{ background: var(--teal); border-color: var(--teal); color: var(--void); font-weight:600; }
+  .sw-num:hover{ border-color: var(--teal); }
+
+  .footer-note{ text-align:center; margin-top: 34px; }
+  .footer-note button{
+    background:none; border:none; color: var(--muted); font-family: var(--font-mono); font-size: 11px;
+    text-decoration: underline; cursor:pointer;
+  }
+  .toast{
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--ember); color: var(--void); padding: 10px 18px; font-family: var(--font-mono);
+    font-size: 12px; z-index: 100; display:none;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <h1 class="hero-title">Logbook</h1>
+      <div class="hero-sub" id="heroSub">loading —</div>
+    </div>
+    <div class="streak-badge">
+      <div>
+        <div class="streak-num" id="streakNum">0</div>
+        <div class="streak-label">DAY STREAK</div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="lectures">Lectures</button>
+    <button data-tab="selfstudy">Self-Study</button>
+    <button data-tab="questions">Questions</button>
+    <button data-tab="specialwar">Special War</button>
+  </nav>
+
+  <main id="app">
+    <div class="empty-note">Loading your logbook…</div>
+  </main>
+
+  <div class="footer-note">
+    <button id="resetBtn" type="button">reset all data</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- constants ---------- */
+const START_ISO = '2026-09-15';
+const SCHEDULE_DAYS = 800;
+
+const SUBJECTS_META = {
+  thermal:   { label: 'Thermal',    total: 77, teal:false },
+  maths:     { label: 'Maths',      total: 38, teal:false },
+  english:   { label: 'English',    total: 9,  teal:false },
+  production:{ label: 'Production', total: 33, teal:true  }
+};
+const SUBJECT_ORDER = ['thermal','maths','english','production'];
+
+const SW_META = [
+  { key:'engMechanics', label:'Engineering Mechanics', total:14 },
+  { key:'som',          label:'Strength of Materials',  total:18 },
+  { key:'md',            label:'Machine Design',        total:13 },
+  { key:'industrial',    label:'Industrial Engineering',total:27 },
+  { key:'aptitude',      label:'Aptitude',               total:14 }
+];
+
+const DEFAULT_DATA = { lectureCompletions:{}, selfStudy:[], questions:{}, specialWar:{ engMechanics:{}, som:{}, md:{}, industrial:{}, aptitude:{} } };
+
+/* ---------- date helpers ---------- */
+function toISO(d){ return d.toLocaleDateString('en-CA'); }
+function parseISO(s){ return new Date(s + 'T00:00:00'); }
+function addDays(iso, n){ const d = parseISO(iso); d.setDate(d.getDate()+n); return toISO(d); }
+function formatPretty(iso){ return parseISO(iso).toLocaleDateString('en-IN',{ weekday:'short', day:'numeric', month:'short', year:'numeric' }); }
+function formatShort(iso){ return parseISO(iso).toLocaleDateString('en-IN',{ day:'numeric', month:'short' }); }
+const TODAY_ISO = toISO(new Date());
+const MAX_SCHEDULE_ISO = addDays(START_ISO, SCHEDULE_DAYS - 1);
+function clampToSchedule(iso){ if(iso < START_ISO) return START_ISO; if(iso > MAX_SCHEDULE_ISO) return MAX_SCHEDULE_ISO; return iso; }
+
+/* ---------- schedule build ---------- */
+function buildSchedule(){
+  const schedule = {};
+  let thermalCount = 0, productionCount = 0, monThuCount = 0;
+  const mathsTotal = SUBJECTS_META.maths.total; // 38
+  let d = parseISO(START_ISO);
+  for(let i=0;i<SCHEDULE_DAYS;i++){
+    const iso = toISO(d);
+    const wd = d.getDay();
+    const entry = {};
+    if(wd >= 1 && wd <= 5){ thermalCount++; entry.thermal = thermalCount; }
+    if(wd >= 1 && wd <= 4){
+      monThuCount++;
+      if(monThuCount <= mathsTotal) entry.maths = monThuCount;
+      else entry.english = monThuCount - mathsTotal;
+    }
+    if(wd === 0 || wd === 6){ productionCount++; entry.production = productionCount; }
+    schedule[iso] = entry;
+    d.setDate(d.getDate()+1);
+  }
+  return schedule;
+}
+const SCHEDULE = buildSchedule();
+
+/* ---------- state ---------- */
+const state = {
+  tab: 'lectures',
+  viewDate: clampToSchedule(TODAY_ISO),
+  qDate: TODAY_ISO,
+  data: JSON.parse(JSON.stringify(DEFAULT_DATA)),
+  loaded: false
+};
+
+/* ---------- storage ---------- */
+async function loadData(){
+  try{
+    const res = await window.storage.get('tracker-data', false);
+    if(res && res.value){
+      const parsed = JSON.parse(res.value);
+      state.data = {
+        lectureCompletions: parsed.lectureCompletions || {},
+        selfStudy: parsed.selfStudy || [],
+        questions: parsed.questions || {},
+        specialWar: {
+          engMechanics: (parsed.specialWar && parsed.specialWar.engMechanics) || {},
+          som: (parsed.specialWar && parsed.specialWar.som) || {},
+          md: (parsed.specialWar && parsed.specialWar.md) || {},
+          industrial: (parsed.specialWar && parsed.specialWar.industrial) || {},
+          aptitude: (parsed.specialWar && parsed.specialWar.aptitude) || {}
+        }
+      };
+    }
+  }catch(e){ /* no saved data yet — start fresh */ }
+  state.loaded = true;
+  render();
+}
+async function persist(){
+  try{
+    const result = await window.storage.set('tracker-data', JSON.stringify(state.data), false);
+    if(!result) showToast('Could not save — try again');
+  }catch(e){ showToast('Could not save — check connection'); }
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(showToast._h);
+  showToast._h = setTimeout(()=>{ t.style.display = 'none'; }, 3000);
+}
+
+/* ---------- activity / streak ---------- */
+function hasActivity(iso){
+  const lc = state.data.lectureCompletions[iso];
+  if(lc && Object.values(lc).some(Boolean)) return true;
+  if(state.data.questions[iso] && state.data.questions[iso] > 0) return true;
+  if(state.data.selfStudy.some(e => e.date === iso)) return true;
+  return false;
+}
+function computeStreak(){
+  let count = 0, d = TODAY_ISO;
+  while(hasActivity(d)){ count++; d = addDays(d, -1); }
+  return count;
+}
+
+/* ---------- render dispatch ---------- */
+function render(){
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === state.tab));
+  document.getElementById('streakNum').textContent = computeStreak();
+  document.getElementById('heroSub').textContent = formatPretty(TODAY_ISO) + ' — course starts ' + formatPretty(START_ISO);
+  const app = document.getElementById('app');
+  if(!state.loaded){ app.innerHTML = '<div class="empty-note">Loading your logbook…</div>'; return; }
+  if(state.tab === 'lectures') app.innerHTML = renderLectures();
+  else if(state.tab === 'selfstudy') app.innerHTML = renderSelfStudy();
+  else if(state.tab === 'questions') app.innerHTML = renderQuestions();
+  else app.innerHTML = renderSpecialWar();
+}
+
+/* ---------- LECTURES TAB ---------- */
+function subjectTotals(subj){
+  let done = 0;
+  for(const iso in state.data.lectureCompletions){
+    if(state.data.lectureCompletions[iso][subj]) done++;
+  }
+  return done;
+}
+function renderLectures(){
+  const v = state.viewDate;
+  const dayEntry = SCHEDULE[v] || {};
+  const isToday = v === TODAY_ISO;
+  const beforeStart = TODAY_ISO < START_ISO;
+
+  let overallDone = 0, overallTotal = 0;
+  for(const s of SUBJECT_ORDER){ overallDone += subjectTotals(s); overallTotal += SUBJECTS_META[s].total; }
+
+  const barsHtml = SUBJECT_ORDER.map(s => {
+    const meta = SUBJECTS_META[s];
+    const done = subjectTotals(s);
+    const pct = Math.min(100, Math.round((done/meta.total)*100));
+    return '<div class="bar-row">' +
+      '<div class="bar-label"><span class="name">' + meta.label + '</span><span class="count">' + done + ' / ' + meta.total + '</span></div>' +
+      '<div class="bar-track"><div class="bar-fill' + (meta.teal?' teal':'') + '" style="width:' + pct + '%"></div></div></div>';
+  }).join('');
+
+  const chips = [];
+  for(let i=-3;i<=3;i++){
+    const iso = clampToSchedule(addDays(v,i));
+    const sch = SCHEDULE[iso] || {};
+    const dots = SUBJECT_ORDER.filter(s => sch[s] !== undefined).map(s => {
+      const done = state.data.lectureCompletions[iso] && state.data.lectureCompletions[iso][s];
+      return '<span class="dot' + (done?' on':'') + (SUBJECTS_META[s].teal?' teal':'') + '"></span>';
+    }).join('');
+    chips.push('<div class="chip' + (iso===v?' active':'') + '" onclick="setViewDate(\'' + iso + '\')">' +
+      '<div class="wd">' + parseISO(iso).toLocaleDateString('en-IN',{weekday:'short'}) + '</div>' +
+      '<div class="dnum">' + formatShort(iso) + '</div>' +
+      '<div class="dots">' + (dots || '&nbsp;') + '</div></div>');
+  }
+
+  let rowsHtml = '';
+  const scheduledSubjects = SUBJECT_ORDER.filter(s => dayEntry[s] !== undefined);
+  if(scheduledSubjects.length === 0){
+    rowsHtml = '<div class="empty-note">Nothing scheduled this day.</div>';
+  } else {
+    rowsHtml = scheduledSubjects.map(s => {
+      const meta = SUBJECTS_META[s];
+      const num = dayEntry[s];
+      const overflow = num > meta.total;
+      const done = !!(state.data.lectureCompletions[v] && state.data.lectureCompletions[v][s]);
+      if(overflow){
+        return '<div class="lec-row complete"><span class="subject-dot' + (meta.teal?' teal':'') + '"></span>' +
+          '<div class="info"><div class="subj">' + meta.label + '</div><div class="lecno">Syllabus complete ✓ (' + meta.total + '/' + meta.total + ')</div></div></div>';
+      }
+      return '<button class="lec-row' + (done?' done':'') + '" onclick="toggleLecture(\'' + v + '\',\'' + s + '\')">' +
+        '<span class="box">' + (done ? checkSvg() : '') + '</span>' +
+        '<span class="subject-dot' + (meta.teal?' teal':'') + '"></span>' +
+        '<div class="info"><div class="subj">' + meta.label + '</div><div class="lecno">Lecture ' + num + ' / ' + meta.total + '</div></div></button>';
+    }).join('');
+  }
+
+  const jumpBtn = beforeStart
+    ? '<button class="text-btn" onclick="setViewDate(\'' + START_ISO + '\')">Go to Day 1</button>'
+    : (isToday ? '' : '<button class="text-btn" onclick="setViewDate(\'' + TODAY_ISO + '\')">Today</button>');
+
+  return '' +
+    '<div class="panel">' +
+      '<h2>Overall syllabus</h2>' +
+      '<p class="panel-sub">' + overallDone + ' of ' + overallTotal + ' lectures completed</p>' +
+      '<div class="bar-row"><div class="bar-track"><div class="bar-fill" style="width:' + Math.round((overallDone/overallTotal)*100) + '%"></div></div></div>' +
+    '</div>' +
+    '<div class="panel">' +
+      '<h2>Progress by subject</h2>' +
+      '<div style="margin-top:14px">' + barsHtml + '</div>' +
+    '</div>' +
+    '<div class="panel">' +
+      '<div class="day-nav">' +
+        '<div class="date-display">' + formatPretty(v) + (isToday ? '<span class="tag">TODAY</span>' : '') + '</div>' +
+        '<div class="nav-btns">' +
+          '<button class="icon-btn" onclick="navDay(-1)" ' + (v<=START_ISO?'disabled':'') + '>&#8592;</button>' +
+          jumpBtn +
+          '<button class="icon-btn" onclick="navDay(1)" ' + (v>=MAX_SCHEDULE_ISO?'disabled':'') + '>&#8594;</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="chip-strip">' + chips.join('') + '</div>' +
+      (v < START_ISO ? '<div class="empty-note">The course starts ' + formatPretty(START_ISO) + '.</div>' : rowsHtml) +
+    '</div>';
+}
+function checkSvg(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="#12161D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>'; }
+function setViewDate(iso){ state.viewDate = clampToSchedule(iso); render(); }
+function navDay(delta){ setViewDate(addDays(state.viewDate, delta)); }
+function toggleLecture(iso, subj){
+  if(!state.data.lectureCompletions[iso]) state.data.lectureCompletions[iso] = {};
+  state.data.lectureCompletions[iso][subj] = !state.data.lectureCompletions[iso][subj];
+  render(); persist();
+}
+
+/* ---------- SELF-STUDY TAB ---------- */
+function renderSelfStudy(){
+  const entries = [...state.data.selfStudy].sort((a,b) => (b.date+b.ts).localeCompare(a.date+a.ts));
+  const list = entries.length === 0
+    ? '<div class="empty-note">No sessions logged yet. Add your first one above.</div>'
+    : entries.map(e => '<div class="entry"><div class="erow"><div>' +
+        '<div class="edate">' + formatPretty(e.date) + (e.minutes ? ' &nbsp;·&nbsp; <span class="emin">' + e.minutes + ' min</span>' : '') + '</div>' +
+        '<div class="etopic">' + escapeHtml(e.topic) + '</div>' +
+        (e.notes ? '<div class="enotes">' + escapeHtml(e.notes) + '</div>' : '') +
+        '</div><button class="del-btn" onclick="deleteSelfStudy(\'' + e.id + '\')" aria-label="Delete entry">&times;</button></div></div>').join('');
+
+  return '' +
+    '<div class="panel">' +
+      '<h2>Log a self-study session</h2>' +
+      '<p class="panel-sub">Anything you studied outside the scheduled lectures.</p>' +
+      '<form onsubmit="submitSelfStudy(event)">' +
+        '<div class="row-2">' +
+          '<label class="field"><span class="lbl">TOPIC / SUBJECT</span><input type="text" id="ssTopic" required placeholder="e.g. Thermal — revision of Rankine cycle"></label>' +
+          '<label class="field"><span class="lbl">DATE</span><input type="date" id="ssDate" value="' + TODAY_ISO + '"></label>' +
+        '</div>' +
+        '<label class="field"><span class="lbl">NOTES (optional)</span><textarea id="ssNotes" placeholder="What did you cover?"></textarea></label>' +
+        '<label class="field" style="max-width:160px"><span class="lbl">MINUTES (optional)</span><input type="number" id="ssMinutes" min="0" placeholder="60"></label>' +
+        '<button class="btn-primary" type="submit">Log session</button>' +
+      '</form>' +
+    '</div>' +
+    '<div class="panel"><h2>History</h2><p class="panel-sub">' + entries.length + ' session' + (entries.length===1?'':'s') + ' logged</p>' + list + '</div>';
+}
+function escapeHtml(s){ const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function submitSelfStudy(ev){
+  ev.preventDefault();
+  const topic = document.getElementById('ssTopic').value.trim();
+  const date = document.getElementById('ssDate').value || TODAY_ISO;
+  const notes = document.getElementById('ssNotes').value.trim();
+  const minutes = document.getElementById('ssMinutes').value;
+  if(!topic) return;
+  state.data.selfStudy.push({ id: 'e' + Date.now() + Math.random().toString(36).slice(2,7), date, topic, notes, minutes: minutes ? Number(minutes) : null, ts: new Date().toISOString() });
+  render(); persist();
+}
+function deleteSelfStudy(id){
+  state.data.selfStudy = state.data.selfStudy.filter(e => e.id !== id);
+  render(); persist();
+}
+
+/* ---------- QUESTIONS TAB ---------- */
+const Q_MAX = 60;
+function renderQuestions(){
+  const v = state.qDate;
+  const count = state.data.questions[v] || 0;
+  const pct = Math.min(100, Math.round((count / Q_MAX) * 100));
+  const color = count >= Q_MAX ? 'var(--teal)' : (pct >= 50 ? 'var(--brass)' : 'var(--ember)');
+  const isToday = v === TODAY_ISO;
+
+  const last7 = [];
+  for(let i=0;i<7;i++) last7.push(addDays(v,-i));
+  const valid7 = last7.filter(iso => state.data.questions[iso] !== undefined);
+  const avg7 = valid7.length ? Math.round(valid7.reduce((a,iso)=>a+state.data.questions[iso],0) / valid7.length) : 0;
+  const allCounts = Object.values(state.data.questions);
+  const best = allCounts.length ? Math.max(...allCounts) : 0;
+
+  const histEntries = Object.keys(state.data.questions).sort().reverse().slice(0,10);
+  const histRows = histEntries.length === 0
+    ? '<tr><td colspan="2" class="empty-note" style="padding:10px 0;">No entries yet.</td></tr>'
+    : histEntries.map(iso => '<tr><td>' + formatPretty(iso) + '</td><td style="font-family:var(--font-mono)">' + state.data.questions[iso] + ' / ' + Q_MAX + '</td></tr>').join('');
+
+  return '' +
+    '<div class="panel">' +
+      '<div class="day-nav">' +
+        '<div class="date-display">' + formatPretty(v) + (isToday ? '<span class="tag">TODAY</span>' : '') + '</div>' +
+        '<div class="nav-btns">' +
+          '<button class="icon-btn" onclick="navQDay(-1)">&#8592;</button>' +
+          (isToday ? '' : '<button class="text-btn" onclick="setQDate(\'' + TODAY_ISO + '\')">Today</button>') +
+          '<button class="icon-btn" onclick="navQDay(1)">&#8594;</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="q-input-row">' +
+        '<input type="number" min="0" id="qInput" value="' + (state.data.questions[v] || '') + '" placeholder="0" oninput="saveQuestionCount(this)">' +
+        '<span class="q-vs">out of ' + Q_MAX + ' target</span>' +
+      '</div>' +
+      '<div class="q-bar-track"><div class="q-bar-fill" style="width:' + pct + '%; background:' + color + '"></div></div>' +
+      '<div class="stat-grid">' +
+        '<div class="stat-box"><div class="stat-label">7-DAY AVERAGE</div><div class="stat-val">' + avg7 + '</div></div>' +
+        '<div class="stat-box"><div class="stat-label">BEST DAY</div><div class="stat-val">' + best + '</div></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="panel"><h2>History</h2><table class="hist"><thead><tr><th>Date</th><th>Solved</th></tr></thead><tbody>' + histRows + '</tbody></table></div>';
+}
+function setQDate(iso){ state.qDate = iso; render(); }
+function navQDay(delta){ setQDate(addDays(state.qDate, delta)); }
+function saveQuestionCount(input){
+  const val = input.value === '' ? undefined : Math.max(0, parseInt(input.value,10) || 0);
+  if(val === undefined) delete state.data.questions[state.qDate];
+  else state.data.questions[state.qDate] = val;
+  persist();
+  const bar = document.querySelector('.q-bar-fill');
+  if(bar){
+    const v = val || 0;
+    const pct = Math.min(100, Math.round((v/Q_MAX)*100));
+    const color = v >= Q_MAX ? 'var(--teal)' : (pct >= 50 ? 'var(--brass)' : 'var(--ember)');
+    bar.style.width = pct + '%'; bar.style.background = color;
+  }
+}
+
+/* ---------- SPECIAL WAR TAB ---------- */
+function renderSpecialWar(){
+  let totalDone = 0, totalAll = 0;
+  const cards = SW_META.map(m => {
+    const progress = state.data.specialWar[m.key] || {};
+    const done = Object.values(progress).filter(Boolean).length;
+    totalDone += done; totalAll += m.total;
+    const squares = [];
+    for(let i=1;i<=m.total;i++){
+      const on = !!progress[i];
+      squares.push('<button class="sw-num' + (on?' on':'') + '" onclick="toggleSpecialWar(\'' + m.key + '\',' + i + ')">' + i + '</button>');
+    }
+    return '<div class="sw-card"><div class="sw-top"><div class="sw-name">' + m.label + '</div><div class="sw-count">' + done + ' / ' + m.total + '</div></div>' +
+      '<div class="bar-track"><div class="bar-fill teal" style="width:' + Math.round((done/m.total)*100) + '%"></div></div>' +
+      '<div class="sw-grid">' + squares.join('') + '</div></div>';
+  }).join('');
+  const pct = Math.round((totalDone/totalAll)*100);
+
+  return '' +
+    '<div class="boost-meter">' +
+      '<div class="bm-top"><div class="bm-title">' + boltSvg() + ' Boost progress</div><div class="bm-count">' + totalDone + ' / ' + totalAll + '</div></div>' +
+      '<div class="bar-track"><div class="bar-fill teal" style="width:' + pct + '%"></div></div>' +
+      '<p class="panel-sub" style="margin:10px 0 0">Extra reps beyond the weekly schedule — tick each one off as you clear it.</p>' +
+    '</div>' +
+    cards;
+}
+function boltSvg(){ return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3FA796" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>'; }
+function toggleSpecialWar(key, num){
+  if(!state.data.specialWar[key]) state.data.specialWar[key] = {};
+  state.data.specialWar[key][num] = !state.data.specialWar[key][num];
+  render(); persist();
+}
+
+/* ---------- tabs + reset ---------- */
+document.getElementById('tabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-tab]');
+  if(!btn) return;
+  state.tab = btn.dataset.tab;
+  render();
+});
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  if(!confirm('This will permanently erase all logged progress. Continue?')) return;
+  state.data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  render();
+  try{ await window.storage.set('tracker-data', JSON.stringify(state.data), false); }catch(e){ showToast('Could not save reset'); }
+});
+
+loadData();
+</script>
+</body>
+</html>

@@ -8,6 +8,7 @@ const subjectsRouter = require('./routes/subjects');
 const sessionsRouter = require('./routes/sessions');
 const goalsRouter = require('./routes/goals');
 const tasksRouter = require('./routes/tasks');
+const lecturesRouter = require('./routes/lectures');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use('/api/subjects', subjectsRouter);
 app.use('/api/sessions', sessionsRouter);
 app.use('/api/goals', goalsRouter);
 app.use('/api/tasks', tasksRouter);
+app.use('/api/lectures', lecturesRouter);
 
 // Catch-all route for SPA support
 app.get('*', (req, res) => {

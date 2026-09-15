@@ -423,3 +423,187 @@ html[data-theme="light"] {
   --muted: #64748B;
   --ember: #D2603A;
 }
+
+/* ============================================
+   Lecture Manager — matching example.html
+   ============================================ */
+
+/* Day navigator */
+.day-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.date-display {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+}
+.date-display .tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--brass);
+  border: 1px solid var(--brass-dim);
+  padding: 2px 6px;
+  margin-left: 8px;
+  vertical-align: 2px;
+}
+.nav-btns { display: flex; gap: 6px; align-items: center; }
+.icon-btn {
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  color: var(--paper);
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-btn:hover { border-color: var(--brass-dim); }
+.icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.text-btn {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  padding: 8px 12px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.text-btn:hover { color: var(--brass); border-color: var(--brass-dim); }
+
+/* Chip strip (7-day mini calendar) */
+.chip-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 18px;
+}
+.chip {
+  flex: 0 0 auto;
+  width: 54px;
+  text-align: center;
+  padding: 8px 4px;
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+.chip.active { border-color: var(--brass); }
+.chip .wd   { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+.chip .dnum { font-family: var(--font-display); font-size: 15px; font-weight: 600; margin: 2px 0; }
+.chip .dots { display: flex; justify-content: center; gap: 3px; }
+.chip .dot  { width: 5px; height: 5px; border-radius: 50%; background: var(--line); }
+.chip .dot.on { background: var(--brass); }
+
+/* Lecture rows — button style */
+button.lec-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  color: var(--paper);
+  transition: border-color 0.15s ease;
+}
+button.lec-row:last-child { margin-bottom: 0; }
+button.lec-row:hover { border-color: var(--brass-dim); }
+button.lec-row.done { border-color: var(--brass-dim); }
+
+/* Checkbox square inside lec-row */
+button.lec-row .box {
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--muted);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+button.lec-row.done .box {
+  border-color: var(--brass);
+  background: var(--brass);
+}
+button.lec-row .box svg {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+/* Info inside lec-row */
+button.lec-row .info .subj { font-weight: 600; font-size: 14px; }
+button.lec-row .info .lecno { font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-top: 2px; }
+button.lec-row.done .info .subj { color: var(--muted); text-decoration: line-through; }
+
+/* Subject dot (colored circle) */
+.subject-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Progress bar label (name + count row) */
+.bar-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.bar-label .name { font-weight: 600; }
+.bar-label .count { font-family: var(--font-mono); color: var(--muted); font-size: 12px; }
+
+/* Interactive checkbox inside div.lec-row */
+.lec-row .box {
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--muted);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  transition: all 0.15s ease;
+}
+.lec-row .box svg {
+  width: 13px;
+  height: 13px;
+  display: block;
+}
+.lec-row.done .info .subj {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+/* Schedule Day box hover and active */
+.schedule-day-box {
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+.schedule-day-box:hover {
+  border-color: var(--brass) !important;
+}
+
+.count-btn {
+  background: var(--void);
+  border: 1px solid var(--line);
+  color: var(--paper);
+  border-radius: 3px;
+  transition: all 0.15s ease;
+}
+.count-btn:hover {
+  background: var(--panel-raised);
+  border-color: var(--brass-dim);
+}

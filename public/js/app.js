@@ -5,6 +5,7 @@ window.App = (function() {
     currentTab: 'dashboard',
     subjects: [],
     stats: null,
+    lectureStats: null,
     todayGoal: null,
     tasks: []
   };
@@ -44,7 +45,7 @@ window.App = (function() {
       try {
         state.todayGoal = await window.API.get('/api/goals/today');
       } catch (e) {
-        state.todayGoal = { date: todayISO, targetMinutes: 120 };
+        state.todayGoal = { date: todayISO, targetMinutes: 120, targetLectures: 2 };
       }
       
       updateHeader();
@@ -75,6 +76,11 @@ window.App = (function() {
       bySubject: [],
       last30Days: []
     };
+    try {
+      state.lectureStats = await window.API.get('/api/lectures/stats');
+    } catch (e) {
+      state.lectureStats = { totalLectures: 0, bySubject: [], last30Days: [] };
+    }
     updateHeader();
   }
 
@@ -99,8 +105,12 @@ window.App = (function() {
   function render() {
     switch(state.currentTab) {
       case 'dashboard':
-        DOM.app.innerHTML = window.Dashboard.render(state.stats, state.subjects, state.todayGoal);
+        DOM.app.innerHTML = window.Dashboard.render(state.stats, state.subjects, state.todayGoal, state.lectureStats);
         if (window.Dashboard.init) window.Dashboard.init();
+        break;
+      case 'lectures':
+        DOM.app.innerHTML = window.Lectures.render(state.subjects, state.lectureStats);
+        if (window.Lectures.init) window.Lectures.init();
         break;
       case 'sessions':
         DOM.app.innerHTML = window.Sessions.render(state.subjects);
